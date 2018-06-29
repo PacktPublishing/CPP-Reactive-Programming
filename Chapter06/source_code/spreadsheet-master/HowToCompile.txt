@@ -1,0 +1,12 @@
+
+How to Compile Spreadsheet program?
+
+g++ -I<PathToStremulus> -I<PathToBoost>  main.cpp
+
+Example
+
+g++ -I"../Streamulus-master/src"  
+     -I"../boost_1_66_0\boost_1_66_0" main.cpp
+
+
+  

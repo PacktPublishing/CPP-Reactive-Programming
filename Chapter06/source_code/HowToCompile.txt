@@ -1,0 +1,23 @@
+
+How do I Compile Streams examples?
+
+g++ -I<PathToStreams>  Streams_first.cpp
+
+
+Eample
+  g++ -I./Streams-master/source Streams_First.cpp
+
+
+How do I Compile Streamulus examples?
+
+g++ -I<PathToStreamulus> -I<PathToBoost> Streamulus_first.cpp
+'
+
+Eample
+  g++ -I"./Streamulus-master/src"  
+      -I./boost_1_66_0/boost_1_66_0 streamulus_first.cpp
+
+
+How do I Compile Spreadsheet examples?
+
+Go to the Spreadsheet-mater folder to see instructions to compile the program

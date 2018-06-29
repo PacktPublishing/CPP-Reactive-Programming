@@ -1,0 +1,340 @@
+#include <rxcpp/rx.hpp>
+#include <memory>
+#include <map>
+#include <algorithm>
+#include <string>
+#include <vector>
+#include <windows.h>
+using namespace std;
+//-------------- Forward Declarations
+
+class FileNode;
+class DirectoryNode;
+class IFileFolderVisitor;
+
+class FileInformation
+{
+   string name;
+   long size;
+   public:
+   FileInformation( string pname,long psize )
+   {
+         name = pname;
+         size = psize;
+
+   }
+
+   string toString() {
+        return name + " : ";            
+   }
+
+};
+
+class EntryNode{
+    protected:
+      string  name;
+      int isdir;
+      long size;
+    public:
+      virtual bool Isdir() = 0;
+      virtual long getSize() = 0;
+      virtual void Accept(IFileFolderVisitor& ivis)=0;
+};
+
+
+
+class IFileFolderVisitor
+{
+   public:
+    virtual void Visit(FileNode& fn )=0;
+    virtual void Visit(DirectoryNode& dn )=0;
+};
+
+
+//////////////////////////////////////
+//
+// The Node which represents Files
+//
+//
+class FileNode : public EntryNode {
+    
+   public: 
+   FileNode(string pname, long psize) { 
+	isdir = 0; name = pname; size = psize;
+   }
+   virtual bool  Isdir() { return isdir == 1; }
+   string getname() { return name; }
+   virtual long getSize() {return size; }
+   virtual void Accept( IFileFolderVisitor& ivis ){
+       ivis.Visit(*this);
+    }
+
+};
+
+
+
+
+///////////////////////////////////////
+// Node which represents Directory
+//
+//
+
+class DirectoryNode : public EntryNode {
+  list<EntryNode *> files;  
+
+ public:
+   
+  DirectoryNode(string pname) { 
+	files.clear(); isdir = 1; name = pname;
+        
+  }
+  list<EntryNode *> GetAllFiles() {
+       return files;
+  }
+  bool AddFile( string pname , long size) {
+       files.push_back(new FileNode(pname,size));
+       return true;
+  }
+
+  bool AddDirectory( DirectoryNode *dn ) {
+	files.push_back(dn);
+        return true;
+  }
+  bool Isdir() { return isdir == 1; }
+  string  getname() { return name; }
+  void   setname(string pname) { name = pname; }
+  long getSize() {return 0; }
+  void accept( IFileFolderVisitor& ivis ){
+       ivis.Visit(*this);
+    }
+
+};
+
+
+
+
+class DirHelper {
+
+   public:
+     static int SearchDirectory(std::vector<std::string> &refvecFiles,
+                    const std::string        &refcstrRootDirectory)
+{
+  std::string     strFilePath;             // Filepath
+ 
+  HANDLE          hFile;                   // Handle to file
+  WIN32_FIND_DATA FileInformation;         // File information
+
+
+  string strPattern = refcstrRootDirectory + "\\*.*";
+
+  hFile = ::FindFirstFile(strPattern.c_str(), &FileInformation);
+  if(hFile != INVALID_HANDLE_VALUE)
+  {
+    do
+    {
+      if(FileInformation.cFileName[0] != '.')
+      {
+        strFilePath.erase();
+        strFilePath = refcstrRootDirectory + "\\" + FileInformation.cFileName;
+       // cout << strFilePath << endl;
+        if(FileInformation.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        {
+            EntryNode *nst =  visitAllDirsAndFiles(temp);
+               ns.AddDirectory((DirectoryNode)nst);
+            // Search subdirectory
+            int iRC = SearchDirectory(refvecFiles,
+                                      strFilePath);
+            if(iRC)
+              return iRC;
+          
+        }
+        else
+        {
+         
+            // Save filename
+            refvecFiles.push_back(strFilePath);
+         
+        }
+      }
+    } while(::FindNextFile(hFile, &FileInformation) == TRUE);
+
+    // Close handle
+    ::FindClose(hFile);
+
+    DWORD dwError = ::GetLastError();
+    if(dwError != ERROR_NO_MORE_FILES)
+      return dwError;
+  }
+
+  return 0;
+}
+
+
+   static EntryNode *SearchDirectory2(std::vector<std::string> &refvecFiles,
+                  const std::string        &refcstrRootDirectory)
+{
+  std::string     strFilePath;             // Filepath
+ 
+  HANDLE          hFile;                   // Handle to file
+  WIN32_FIND_DATA FileInformation;         // File information
+
+
+  string strPattern = refcstrRootDirectory + "\\*.*";
+
+  hFile = ::FindFirstFile(strPattern.c_str(), &FileInformation);
+
+  
+  if(hFile != INVALID_HANDLE_VALUE)
+  {
+     if ( FileInformation.cFileName[0]  == '.' ||
+          FileInformation.dwFileAttributes&FILE_ATTIBTE_DIRECTORY == 0)
+              return 0;
+
+     DirectoryNode *DirNode = new DirectoryNode(refcstrRootDirectory);
+    do
+    {
+      if(FileInformation.cFileName[0] != '.')
+      {
+        strFilePath.erase();
+        strFilePath = refcstrRootDirectory + "\\" + FileInformation.cFileName;
+       // cout << strFilePath << endl;
+        if(FileInformation.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        {
+         
+            // Search subdirectory
+            DirNode *temp = SearchDirectory2(refvecFiles,
+                                      strFilePath);
+            if(temp) {
+              DirNode->AddDirectory(temp);
+            }
+          
+        }
+        else
+        {
+            DirNode->AddFile(strFilePath,1024);
+            // Save filename
+            refvecFiles.push_back(strFilePath);
+         
+        }
+      }
+    } while(::FindNextFile(hFile, &FileInformation) == TRUE);
+
+    // Close handle
+    ::FindClose(hFile);
+
+    DWORD dwError = ::GetLastError();
+    if(dwError != ERROR_NO_MORE_FILES)
+      return DirNode;
+  }
+
+  return 0;
+}
+
+
+};
+
+
+
+
+class PrintFolderVisitor : public IFileFolderVisitor
+{
+  public:
+    void Visit(FileNode& fn ) {
+       cout << fn.getname() << endl;
+    }
+    void Visit(DirectoryNode& dn ) {
+
+      #if 0
+	System.out.println("Directory -> " + dn.getname() );
+
+        //Traversing list through Iterator 
+        ArrayList<EntryNode> list = dn.GetAllFiles(); 
+  	Iterator itr=list.iterator();  
+ 	 while(itr.hasNext()){ 
+              EntryNode nt = (EntryNode)itr.next();
+              if ( nt.isdir() )
+                  Visit((DirectoryNode)nt);
+              else
+   		( (FileNode) nt).accept(this);  
+  	}  
+     #endif
+    }
+ 
+};
+
+
+//////////////////////////////////////
+//
+// Flatten the File/Folders into a linear list
+//
+//
+class FlattenVisitor : public IFileFolderVisitor
+{
+    list <FileInformation> files;
+    string CurrDir;
+    public:
+    FlattenVisitor() {
+ 	CurrDir = "";
+    }
+
+    list<FileInformation> GetAllFiles() {
+         return files;
+    }
+
+    void Visit(FileNode& fn ) {
+       files.push_back( FileInformation(
+          CurrDir +"\\" + fn.getname(),fn.getSize()));
+       
+    }
+    void Visit(DirectoryNode& dn ) {
+	// System.out.println("Directory -> " + dn.getname() );
+        CurrDir = dn.getname();
+
+        cout << "Directory->  "  << CurrDir << endl;
+        //Traversing list through Iterator 
+        list <EntryNode *> list = dn.GetAllFiles(); 
+
+        #if 0
+  	Iterator itr=list.iterator();  
+ 	 while(itr.hasNext()){ 
+              EntryNode nt = (EntryNode)itr.next();
+              if ( nt.isdir() ) {
+                  CurrDir = ((DirectoryNode)nt).getname();
+                  ((DirectoryNode)nt).accept(this);
+              }
+              else
+   		( (FileNode) nt).accept(this);  
+  	}  
+        #endif
+    }
+ 
+};
+
+
+
+int main(int argc, char *argv[]) {
+
+    int                      iRC         = 0;
+  std::vector<std::string> vecAviFiles;
+  std::vector<std::string> vecTxtFiles;
+
+
+  // Search 'c:' for '.avi' files including subdirectories
+  DirHelper::SearchDirectory(vecAviFiles, "D:\\java");
+  if(iRC)
+  {
+    std::cout << "Error " << iRC << std::endl;
+    return -1;
+  }
+
+   // Print results
+  for(std::vector<std::string>::iterator iterTxt = vecAviFiles.begin();
+      iterTxt != vecAviFiles.end();
+      ++iterTxt)
+    std::cout << *iterTxt << std::endl;
+
+
+  return 0;
+
+}
+

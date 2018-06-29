@@ -1,0 +1,34 @@
+language: cpp
+
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:beineri/opt-qt562'
+          packages:
+            - g++-5
+            - libc6-i386
+            - qt56tools
+            - qt56base
+      before_install:
+        - export CC=gcc-5
+        - export CXX=g++-5
+        - export PATH="/opt/qt56/bin/:${PATH}"
+        - qt56-env.sh
+    - os: osx
+      compiler: clang
+      before_install:
+        - brew install qt
+        - export PATH="/usr/local/opt/qt/bin/:${PATH}"
+
+install:
+  - git clone https://github.com/Reactive-Extensions/RxCpp.git RxCpp
+script:
+  - cd test
+  - qmake test.pro
+  - make CXX="${CXX}" CC="${CC}" all
+  - ./rxtest

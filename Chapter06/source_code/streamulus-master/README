@@ -1,0 +1,12 @@
+
+Streamulus is a C++ DSEL for event stream computations. 
+
+Read all about it at http://www.streamulus.com/
+
+It is a header-only library that relies on boost. To build your program, 
+simply put streamulus/src and boost in your include paths. 
+
+Follow @streamulus on twitter for news about the project (releases, documentation, etc).
+
+Irit Katriel
+firstnamelastname@yahoo.com
