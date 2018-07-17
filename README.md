@@ -63,4 +63,3 @@ Peter has been eagerly following the C++ standard and RxCpp libraries as part of
 
 ## Other books by the author
 [.NET Design Patterns](https://www.packtpub.com/application-development/net-design-patterns?utm_source=github&utm_medium=repository&utm_campaign=9781786466150)
-
