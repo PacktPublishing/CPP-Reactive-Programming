@@ -57,7 +57,7 @@ has been working in the software industry for the last 25 years, starting his ca
 He is the primary implementer of the SLANG4.net compilation system, which has been ported to C++ with an LLVM backend. He coauthored .NET Design Patterns, by Packt Publishing.
 
 **Peter Abraham**
-has been a performance fanatic and a C/C++ programming language enthusiast right from his college days, where he excelled in Microsoft Windows programming and GNU Linux programming. He garnered experience in working with CUDA, image processing, and computer graphics programs by virtue of working with companies such as Quest Global, Siemens, and Tektronics.
+has been a performance fanatic and a C/C++ programming language enthusiast right from his college days, where he excelled in Microsoft Windows programming and GNU Linux programming. He garnered experience in working with CUDA, image processing, and computer graphics programs by virtue of working with companies such as Quest Global, Siemens, and Tektronix.
 
 Peter has been eagerly following the C++ standard and RxCpp libraries as part of his profession. He has worked with cross-platform GUI toolkits such as Qt, WxWidgets, and FOX toolkit.
 
