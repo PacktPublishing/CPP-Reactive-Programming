@@ -26,7 +26,7 @@ class EventSourceValueSubject{
        sinks.clear();
    }
    bool Subscribe( EventSourceValueObserver<T> *sink )
-   { sinks.push_back(sink);}
+   { sinks.push_back(sink); return true;}
 
    void NotifyAll() {
       for (auto sink : sinks) { sink->Update(State); }
